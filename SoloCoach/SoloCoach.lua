@@ -6,6 +6,7 @@
 --   Claude reads it from WTF\Account\<account>\<realm>\<character>\SavedVariables\SoloCoach.lua
 -- Claude -> game: Claude writes Advice.lua in this folder; /reload loads it and the notes
 --   panel opens when the notes are new. /coach toggles the panel.
+-- Guides.lua: Claude's lasting guides (rogue, leatherworking), /coach guide <n> or the /sui menu.
 
 local GetItemLevel = (C_Item and C_Item.GetDetailedItemLevelInfo) or GetDetailedItemLevelInfo
 local GetSlots = (C_Container and C_Container.GetContainerNumSlots) or GetContainerNumSlots
@@ -220,18 +221,34 @@ body:SetWidth(330)
 body:SetJustifyH("LEFT")
 body:SetSpacing(3)
 
+local function ShowText(heading, text)
+    title:SetText(heading)
+    body:SetText(text)
+    content:SetHeight(body:GetStringHeight() + 10)
+    scroll:SetVerticalScroll(0)
+    panel:Show()
+end
+
 local function ShowAdvice()
     local advice = SoloCoachAdvice
     if not advice or not advice.lines then
-        title:SetText("SoloCoach")
-        body:SetText("No notes yet. Do /reload, then ask Claude.")
+        ShowText("SoloCoach", "No notes yet. Do /reload, then ask Claude.")
     else
-        title:SetText("Notes from Claude  |cff888888" .. (advice.updated or "") .. "|r")
-        body:SetText(table.concat(advice.lines, "\n"))
+        ShowText("Notes from Claude  |cff888888" .. (advice.updated or "") .. "|r", table.concat(advice.lines, "\n"))
     end
-    content:SetHeight(body:GetStringHeight() + 10)
-    panel:Show()
 end
+
+-- Guides (Guides.lua): kept apart from the notes so a new answer never replaces them.
+-- Also opened from the Guides menu in the SoloUI window.
+local function ShowGuide(index)
+    local g = SoloCoachGuides and SoloCoachGuides[index]
+    if not g or not g.lines then return false end
+    ShowText(g.name .. "  |cff888888" .. (g.updated or "") .. "|r", table.concat(g.lines, "\n"))
+    return true
+end
+
+SoloCoach_ShowNotes = ShowAdvice
+SoloCoach_ShowGuide = ShowGuide
 
 -- Events ------------------------------------------------------------------
 
@@ -283,6 +300,11 @@ SlashCmdList.SOLOCOACH = function(msg)
             print("SoloCoach: the client gave no character data; kept the last snapshot ("
                 .. (SoloCoachChar.snapshot and SoloCoachChar.snapshot.taken or "none") .. ").")
         end
+    elseif msg == "guide" or msg == "guides" then
+        print("SoloCoach guides (/coach guide <number>, or the Guides menu in /sui):")
+        for i, g in ipairs(SoloCoachGuides or {}) do print("  " .. i .. ". " .. g.name) end
+    elseif msg:match("^guides? %d+$") then
+        if not ShowGuide(tonumber(msg:match("%d+"))) then print("SoloCoach: no guide with that number.") end
     elseif panel:IsShown() then
         panel:Hide()
     else

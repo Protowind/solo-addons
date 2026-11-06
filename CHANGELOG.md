@@ -2,7 +2,17 @@
 
 Own WoW addons and data tools. Newest first.
 
+## 2026-11-07
+
+### Guides menu
+- **SoloCoach 1.2**: new `Guides.lua` with five guides from ROGUE.md and LEATHERWORKING.md: rogue talents (Combat), rotation, gear and weapons, milestones; leatherworking 1-150. Kept apart from `Advice.lua`, so new notes never wipe them (the 00:10 notes had the rogue block pasted in; removed again). `/coach guide` lists them, `/coach guide <n>` opens one. The panel now scrolls to the top on each open.
+- **SoloUI 1.1**: "Guides" button at the top right of the `/sui` window. Its menu lists Claude's latest notes and every guide; a pick opens it in the SoloCoach panel. Greyed out without SoloCoach. Not yet tested in game.
+
 ## 2026-11-06
+
+### SoloCoach notes: Undercity (23:58)
+- Snapshot read (level 15, Durotar 23:47). Newest Forever build still 1.60.1.70790 (wago.tools); Forever hotfixes 5 Nov touch Durotar, Dustwallow, Swamp of Sorrows, Zephras, nothing in the quest log.
+- Undercity at 15: only hand-in is The Power to Destroy (Varimathras). Rogue Find the Shattered Hand needs 16 (take To Orgrimmar! there instead). Other UC quests need Silverpine chains. First Aid Journeyman trainable now. Notes in `SoloCoach\Advice.lua`, credited to QuestieDB and ForeverDB. Rogue talents, rotation and gear kept under the notes so the guide stays in the panel.
 
 ### Suite sweep (all 14 addons read; fixes)
 - **SoloUI**: hiding Blizzard's TargetFrame took its child TargetFrameSpellBar (the target's cast bar) with it, and PlayerFrame took PetFrame. Both are now moved to UIParent first and anchored under the SoloUI target and player frames (`Rescue`), then the parents are hidden. Caught frame errors now go to the game's error handler when SoloErrors is loaded (one log, counted), else the old once-in-chat and `SoloUIDB.errors` path.

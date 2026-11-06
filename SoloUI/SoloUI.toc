@@ -2,7 +2,7 @@
 ## Title: SoloUI
 ## Notes: Flat ElvUI-style unit frames (player, target, target of target, party) and one options window for all Solo addons. /sui
 ## Author: Protowind
-## Version: 1.0
+## Version: 1.1
 ## SavedVariables: SoloUIDB
 ## OptionalDeps: SoloErrors
 Frames.lua

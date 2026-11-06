@@ -95,6 +95,7 @@ Already tested: 1H swing timing (within 0.15 s).
 
 ## SoloCoach
 
+- [ ] v1.2: `/coach guide` lists 5 guides in chat; `/coach guide 1` opens the rogue talents; `/coach` still opens Claude's notes
 - [ ] v1.1 (2026-11-05): play a few minutes, log out, log back in: Claude can read gear, bags, gold, XP and quest objectives from the logout save (the live saves before this were blank)
 - [ ] `/coach snap` right after login says "snapshot taken" (not "kept the last snapshot")
 - [x] /reload: no errors
@@ -155,6 +156,7 @@ Already tested: 1H swing timing (within 0.15 s).
 
 ## SoloUI (new 2026-11-06)
 
+- [ ] `/sui`: Guides button top right (left of the close button); click lists Claude's latest notes and 5 guides; a pick opens it in the SoloCoach panel, scrolled to the top; menu closes
 - [ ] /reload: flat player frame left of centre, Blizzard's player frame gone; no Lua errors
 - [ ] Target a mob: flat target frame right of centre with level, name, health and power; Elite/Rare tag on elites
 - [ ] Your debuffs (Rupture, Garrote) show above the target frame with a timer spiral
