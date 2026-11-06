@@ -24,12 +24,18 @@ local LAYOUT = {
 
 local function Secret(v) return issecretvalue and issecretvalue(v) end
 
--- Errors in frame updates: caught, shown once each in chat and kept in SoloUIDB.errors (read after /reload)
+-- Errors in frame updates: caught so a bad frame cannot stop the others. With SoloErrors loaded
+-- the message goes to the game's error handler (SoloErrors records and counts it); without it,
+-- shown once in chat and kept in SoloUIDB.errors (read after /reload).
 local seenErrors = {}
 function ns.Safe(fn, ...)
     local ok, err = pcall(fn, ...)
     if ok then return end
     err = tostring(err)
+    if SoloErrorsDB and geterrorhandler then
+        pcall(geterrorhandler(), "SoloUI: " .. err)
+        return
+    end
     if seenErrors[err] then return end
     seenErrors[err] = true
     print("|cff40c0ffSoloUI|r error (shown once): " .. err)
@@ -324,7 +330,24 @@ local function Kill(frame)
     pcall(frame.Hide, frame)
 end
 
+-- Children of the killed frames that must stay: the target's cast bar and the pet frame would go
+-- with their parents, so they are moved to UIParent and anchored under the SoloUI frames first.
+local function Rescue(frame, anchorKey, yOffset)
+    if not frame or frame.soloRescued then return end
+    frame.soloRescued = true
+    local anchor = ns.frames[anchorKey]
+    pcall(function()
+        frame:SetParent(UIParent)
+        if anchor then
+            frame:ClearAllPoints()
+            frame:SetPoint("TOP", anchor, "BOTTOM", 0, yOffset)
+        end
+    end)
+end
+
 local function HideBlizzard()
+    Rescue(TargetFrameSpellBar, "target", -36)   -- below the target of target frame
+    Rescue(PetFrame, "player", -8)
     Kill(PlayerFrame)
     Kill(TargetFrame)
     Kill(TargetFrameToT)

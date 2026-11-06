@@ -221,3 +221,11 @@ Already tested: 1H swing timing (within 0.15 s).
 - [ ] /reload, then tell Claude: `SoloMeterDB.fights` and `SoloMeterDB.probe` in `WTF\Account\<account>\SavedVariables\SoloMeter.lua` are read for the real field names and which values are secret in combat
 - [ ] `/meter capture` says "fight capture off"; a fight adds no line; `/meter capture` again turns it on
 - [ ] `/meter capture clear`: `/meter fights` says none saved
+
+## Sweep fixes (2026-11-06)
+
+- [ ] SoloUI: target a caster mob: its cast bar still shows (now under the target of target frame, or at Blizzard's old spot if the game re-anchors it)
+- [ ] SoloUI: with SoloErrors loaded, a SoloUI frame error appears in `/errors` (not only in chat)
+- [ ] SoloSwing: swing bars still restart on each hit after a /reload, also after swapping weapons (`/sw debug` log shows speeds after equip)
+- [ ] SoloCombo: `/sc debug`, fight with Slice and Dice and Rupture up: timers show in combat; if the log says "aura id and name are secret in combat", tell Claude
+- [ ] SoloMeter: `/meter test` first bar shows your character's name

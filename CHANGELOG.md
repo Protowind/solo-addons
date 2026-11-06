@@ -4,6 +4,13 @@ Own WoW addons and data tools. Newest first.
 
 ## 2026-11-06
 
+### Suite sweep (all 14 addons read; fixes)
+- **SoloUI**: hiding Blizzard's TargetFrame took its child TargetFrameSpellBar (the target's cast bar) with it, and PlayerFrame took PetFrame. Both are now moved to UIParent first and anchored under the SoloUI target and player frames (`Rescue`), then the parents are hidden. Caught frame errors now go to the game's error handler when SoloErrors is loaded (one log, counted), else the old once-in-chat and `SoloUIDB.errors` path.
+- **SoloSwing**: `Speeds()` (attack speed read, inventory lookup and a tooltip scan when the cache is empty) ran every frame from `OnUpdate` and on every target hit; now only on login, equipment, attack speed and combat events, the frame code reads the cache. `Queued()` (Heroic Strike/Cleave colour) is warriors-only and pcall-wrapped: a hidden answer in combat would have errored every frame; after one failure it stays off for the session. Unused `playerGUID` removed.
+- **SoloCombo**: timers matched auras by name only; a secret name in combat would have failed the table lookup inside the scan's pcall and cleared all four timers. Now the spell ID is tried first (Classic rank IDs), then the name (Forever's new rank IDs); secret values are skipped and `/sc debug` logs it once.
+- Small: SoloMeter's test bar reads your name when drawn, not at file load; SoloCoach's toc no longer claims a logout snapshot; SoloMeter and SoloErrors list the retail Interface number like the others.
+- Seen, left alone: SoloErrors turns Blizzard's error popup off for every addon (`/errors popup` restores it); SoloUI does not hide the raid-style compact party frames; SoloQuest's gossip pick prefers a quest over a vendor or flight option on the same NPC (Shift to bypass); SoloStats and SoloMap carry the same copy-box code.
+
 ### SoloMeter attackers and bosses
 - 17 fights captured (Searing Blade packs, boss Bazzalan). `combatSpellDetails` read: one record per spell with amount, unitName, unitClassFilename, classification ("elite"), isMob, isPet; in damage taken it names who hit you with that spell, blank for your own damage. The spell view now shows it in grey after the spell name ("Curse of Agony  Searing Blade Cultist (elite)") with a tooltip (From, Avoidable, Deadly). Boss sessions are named "(!) Bazzalan" by the game: the past-fights menu shows them in red without the mark. Kick confirmed in the interrupts mode ("Shadow Bolt 1").
 

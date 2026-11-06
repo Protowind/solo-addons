@@ -348,7 +348,7 @@ end
 
 -- Test bars: layout check without a fight.
 local TEST = {
-    { UnitName("player") or "You", "ROGUE", 18230, 61.2, true }, { "Grimtotem", "SHAMAN", 15100, 50.7 },
+    { "You", "ROGUE", 18230, 61.2, true }, { "Grimtotem", "SHAMAN", 15100, 50.7 },
     { "Ashenvale", "DRUID", 12040, 40.4 }, { "Vexxa", "WARLOCK", 9800, 32.9 }, { "Durak", "WARRIOR", 7600, 25.5 },
     { "Nimbly", "MAGE", 5400, 18.1 }, { "Thessa", "PRIEST", 2100, 7.0 }, { "Korrak", "HUNTER", 1500, 5.0 },
 }
@@ -363,7 +363,7 @@ local function DrawTest()
             FillBar(b, t[3], TEST[1][3], ClassColour(t[2]))
             b.icon:Hide()
             b.left:SetPoint("LEFT", 4, 0)
-            b.left:SetText(string.format("%d. %s", i, t[1]))
+            b.left:SetText(string.format("%d. %s", i, t[5] and (UnitName("player") or t[1]) or t[1]))
             b.right:SetText(string.format("%s (%s, %.0f%%)", Short(t[3]), Short(t[4]), t[3] / total * 100))
             if t[5] then b.left:SetTextColor(1, 0.9, 0.5) else b.left:SetTextColor(1, 1, 1) end
         else

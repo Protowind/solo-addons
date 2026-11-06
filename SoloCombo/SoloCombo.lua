@@ -24,8 +24,9 @@ local TIMERS = {
     { key = "expose",  ids = { 8647, 8649, 8650, 11197, 11198 },        unit = "target", filter = "HARMFUL|PLAYER", colour = { 0.4, 0.55, 0.85 } },
 }
 for _, t in ipairs(TIMERS) do
-    t.names = {}
+    t.names, t.idSet = {}, {}
     for _, id in ipairs(t.ids) do
+        t.idSet[id] = true
         local name = GetName(id)
         if name then t.names[name] = true end
     end
@@ -41,6 +42,20 @@ local function Debug(fmt, ...)
     SoloComboDB.log = SoloComboDB.log or {}
     table.insert(SoloComboDB.log, string.format("%s %s", date("%H:%M:%S"), line))
     while #SoloComboDB.log > LOG_MAX do table.remove(SoloComboDB.log, 1) end
+end
+
+-- Does this aura belong to a timer? Spell ID first (the known Classic ranks), then the name
+-- (Forever adds new rank IDs). Secret values (combat) cannot index a table, so they are skipped.
+local warnedSecret = false
+local function Matches(t, aura)
+    local id, name = aura.spellId, aura.name
+    if id ~= nil and not IsSecret(id) and t.idSet[id] then return true end
+    if name ~= nil and not IsSecret(name) and t.names[name] then return true end
+    if not warnedSecret and (IsSecret(id) or IsSecret(name)) then
+        warnedSecret = true
+        Debug("aura id and name are secret in combat: timers only match by readable values")
+    end
+    return false
 end
 
 -- Frames -----------------------------------------------------------------
@@ -235,7 +250,7 @@ local function ScanAuras(unit)
         for _, t in ipairs(TIMERS) do
             if t.unit == unit then
                 EachAura(unit, t.filter, function(aura)
-                    if t.names[aura.name] then
+                    if Matches(t, aura) then
                         found[t.key] = aura
                         return true
                     end

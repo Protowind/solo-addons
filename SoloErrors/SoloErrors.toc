@@ -1,4 +1,4 @@
-## Interface: 16001
+## Interface: 16001, 120105
 ## Title: SoloErrors
 ## Notes: Catches every addon's Lua errors and forbidden-action events, saves them for Claude (SoloErrorsDB.errors). /errors
 ## Author: Protowind

@@ -35,7 +35,7 @@ for _, id in ipairs(SLAM_IDS) do
     if name then slamNames[name] = true end
 end
 
-local playerGUID, classFile
+local classFile
 local hands = {}   -- hands.main / hands.off: { start, speed }
 
 -- Frames -----------------------------------------------------------------
@@ -132,7 +132,8 @@ local function ForgetSpeeds()
 end
 
 local function StartSwing(hand)
-    local main, off = Speeds()
+    local main, off = speedCache.main, speedCache.off
+    if not main then main, off = Speeds() end   -- cache filled on login, equipment and combat events
     local speed = hand == "off" and off or main
     if not speed or speed <= 0 then return end
     hands[hand] = { start = GetTime(), speed = speed }
@@ -173,11 +174,23 @@ local function SlamKnown()
     return false
 end
 
+-- Heroic Strike / Cleave queued? Warriors only; IsCurrentSpell is pcall-wrapped since a hidden
+-- (secret) answer in combat would otherwise error every frame. After one failure it stays off.
+local queuedBroken = false
 local function Queued()
-    for _, id in ipairs(QUEUE_IDS) do
-        if IsCurrent(id) then return true end
+    if classFile ~= "WARRIOR" or queuedBroken then return false end
+    local ok, queued = pcall(function()
+        for _, id in ipairs(QUEUE_IDS) do
+            if IsCurrent(id) then return true end
+        end
+        return false
+    end)
+    if not ok then
+        queuedBroken = true   -- Debug is defined further down: plain print here
+        if SoloSwingDB and SoloSwingDB.debug then print("SoloSwing debug: queue check failed, off for this session: " .. tostring(queued)) end
+        return false
     end
-    return false
+    return queued == true
 end
 
 local function UpdateBar(bar, t, now)
@@ -240,8 +253,8 @@ anchor:SetScript("OnUpdate", function()
     else
         slamZone:Hide()
     end
-    local _, offSpeed = Speeds()
-    if offSpeed then
+    -- Cached speed only: Speeds() reads the attack speed and scans a tooltip, not per-frame work
+    if speedCache.off then
         UpdateBar(offBar, hands.off, now)
     else
         offBar:Hide()
@@ -272,7 +285,7 @@ local function OnTargetCombat(action, school)
     seenTargetEvents = true
 
     local now = GetTime()
-    local _, offSpeed = Speeds()
+    local offSpeed = speedCache.off
     local mainDue = DueIn("main", now)
     local offDue = offSpeed and DueIn("off", now)
 
@@ -392,7 +405,6 @@ anchor:SetScript("OnEvent", function(_, event, arg1, arg2, arg3, arg4, arg5)
         showSlam = SlamKnown()
     elseif event == "PLAYER_LOGIN" then
         SoloSwingDB = SoloSwingDB or {}
-        playerGUID = UnitGUID("player")
         _, classFile = UnitClass("player")
         Speeds()
         Debug("weapon speed main %s off %s", tostring(speedCache.main), tostring(speedCache.off))
