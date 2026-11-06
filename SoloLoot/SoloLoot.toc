@@ -2,8 +2,8 @@
 ## Title: SoloLoot
 ## Notes: Dungeon and raid boss drops and item sets, in the style of AtlasLoot. /sloot or /loot
 ## Author: Protowind
-## Version: 1.0
+## Version: 1.1
 ## SavedVariables: SoloLootDB
-## OptionalDeps: SoloGear
+## OptionalDeps: SoloGear, SoloErrors
 Data.lua
 SoloLoot.lua

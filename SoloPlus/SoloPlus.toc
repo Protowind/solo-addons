@@ -4,5 +4,6 @@
 ## Author: Protowind
 ## Version: 1.0
 ## SavedVariables: SoloPlusDB
+## OptionalDeps: SoloErrors
 Leatherworking.lua
 SoloPlus.lua

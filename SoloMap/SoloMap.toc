@@ -5,6 +5,7 @@
 ## Version: 1.1
 ## SavedVariables: SoloMapDB
 ## SavedVariablesPerCharacter: SoloMapChar
+## OptionalDeps: SoloErrors
 Data.lua
 SoloMap.lua
 SoloMap.xml

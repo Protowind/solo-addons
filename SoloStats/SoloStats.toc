@@ -5,6 +5,7 @@
 ## Version: 2.0
 ## SavedVariables: SoloStatsDB
 ## SavedVariablesPerCharacter: SoloStatsSession
+## OptionalDeps: SoloErrors
 Themes.lua
 SoloStats.lua
 Options.lua

@@ -4,5 +4,6 @@
 ## Author: Protowind
 ## Version: 1.1
 ## SavedVariablesPerCharacter: SoloGearChar
+## OptionalDeps: SoloErrors
 Upgrades.lua
 SoloGear.lua

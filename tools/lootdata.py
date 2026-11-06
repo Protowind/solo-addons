@@ -24,6 +24,14 @@ MAX_DROPPERS_RAID = 20  # raid bosses share loot tables
 # QuestieDB gives these no zone; Questie zone IDs some maps use that the game tables do not link
 ZONE_FIX = {11502: 2717, 3654: 718, 8443: 1477, 11519: 2437}
 MAP_ZONES = {230: {1585}}
+# New Forever dungeons have no entrance in the game files: where Blizzard's dungeon post puts them
+# (news.blizzard.com/en-us/article/24301455, Nov 2026)
+WHERE = {
+    3065: "Beneath Ironforge, Dun Morogh (Alliance land)",
+    2999: "Ruins above the Undercity, Tirisfal Glades",
+    2998: "Above Whelgar's Excavation, southern Wetlands",
+    2959: "Dalaran, Alterac Mountains (attunement quest first)",
+}
 MIN_OWN = 2
 NEIGHBOURS = 12
 QUALITY = {"Poor": 0, "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Legendary": 5}
@@ -57,8 +65,22 @@ def instances(build: str) -> list[dict]:
             more = {int(a["ID"]) for a in areas if int(a["ParentAreaID"] or 0) in zones} - zones
             zones |= more
             grew = bool(more)
+        corpse = None
+        if m["CorpseMapID"] not in ("-1", "") and (float(m["Corpse_0"]) or float(m["Corpse_1"])):
+            corpse = (int(m["CorpseMapID"]), float(m["Corpse_0"]), float(m["Corpse_1"]))
         out.append({"map": int(m["ID"]), "name": m["MapName_lang"],
-                    "raid": m["InstanceType"] == "2", "zones": set(zones)})
+                    "raid": m["InstanceType"] == "2", "zones": set(zones), "corpse": corpse})
+    return out
+
+
+def foreverdb_dungeons() -> dict[int, dict]:
+    """ForeverDB dungeon details by map ID (cached in data/foreverdb), or {} without a key."""
+    if not (Path(__file__).with_name("foreverdb.json")).exists():
+        return {}
+    import foreverdb
+    out = {}
+    for d in foreverdb.get_all("dungeons"):
+        out[d["id"]] = foreverdb.get(f"dungeons/{d['id']}")["data"]
     return out
 
 
@@ -103,8 +125,8 @@ def main() -> None:
         if len(near) == 1 and (z := near.pop()) in all_zones:
             zone_of[nid] = z
 
-    lines, count_b, count_i = [], 0, 0
-    result = []
+    fdb = foreverdb_dungeons()
+    entries = []
     for inst in insts:
         bosses = []
         for nid, n in npcs.items():
@@ -118,24 +140,45 @@ def main() -> None:
                 continue   # trash: no loot of its own (rank 3 bosses stay, even with no known loot)
             loot.sort(key=lambda i: (-Quality(i), -(qitems[i].get(9) or 0), i))
             bosses.append((n.get(5) or 0, nid, n.get(1), loot))
-        if not bosses:
-            continue
         bosses.sort(key=lambda b: (b[0], b[2]))
+        d = fdb.get(inst["map"])
+        announced = bool(d.get("announced")) if d else True
+        if not bosses and not (d and announced and d.get("bosses")):
+            continue
+        # ForeverDB's boss list (Forever order, every boss) with QuestieDB's loot matched by name;
+        # bosses only QuestieDB knows follow; ForeverDB's notable loot goes last
+        if d and d.get("bosses"):
+            by_name = {b[2]: b for b in bosses}
+            merged = [by_name.pop(name, (0, 0, name, [])) for name in d["bosses"]]
+            merged += [b for b in bosses if b[2] in by_name]
+        else:
+            merged = bosses
+        notable = [x["itemId"] for x in (d or {}).get("notableLoot") or [] if x.get("itemId")]
+        if notable:
+            merged.append((0, 0, "Notable loot (ForeverDB)", notable))
         levels = [b[0] for b in bosses if b[0]]
-        result.append((min(levels or [0]), inst, bosses))
+        lr = d.get("levelRange") if d else None
+        lo, hi = (lr[0], lr[1]) if lr else (min(levels or [0]), max(levels or [0]))
+        entries.append({"name": inst["name"], "raid": inst["raid"], "min": lo, "max": hi, "bosses": merged,
+                        "corpse": inst["corpse"], "where": WHERE.get(inst["map"]),
+                        "announced": announced, "new": bool(d and d.get("newInForever")),
+                        "loot": sum(len(b[3]) for b in merged)})
 
-    seen, unique = set(), []
-    for r in sorted(result, key=lambda r: -len(r[2])):   # same instance under two map IDs: keep one
-        if r[1]["name"] not in seen:
-            seen.add(r[1]["name"])
-            unique.append(r)
-    result = unique
-    result.sort(key=lambda r: (r[1]["raid"], r[0], r[1]["name"]))
-    for lo, inst, bosses in result:
-        hi = max(b[0] for b in bosses)
-        lines.append(f'    {{ name = {lua_str(inst["name"])}, raid = {str(inst["raid"]).lower()}, '
-                     f'min = {lo}, max = {hi}, bosses = {{')
-        for lvl, nid, name, loot in bosses:
+    seen, result = set(), []
+    for e in sorted(entries, key=lambda e: -e["loot"]):   # same instance under two map IDs: keep one
+        if e["name"] not in seen:
+            seen.add(e["name"])
+            result.append(e)
+    result.sort(key=lambda e: (e["raid"], not e["announced"], e["min"], e["name"]))
+
+    lines, count_b, count_i = [], 0, 0
+    for e in result:
+        lines.append(f'    {{ name = {lua_str(e["name"])}, raid = {str(e["raid"]).lower()}, min = {e["min"]}, '
+                     f'max = {e["max"]}, announced = {str(e["announced"]).lower()}, new = {str(e["new"]).lower()}, '
+                     + (f'entrance = {{ {e["corpse"][0]}, {e["corpse"][1]:.1f}, {e["corpse"][2]:.1f} }}, ' if e["corpse"] else "")
+                     + (f'where = {lua_str(e["where"])}, ' if e["where"] else "")
+                     + "bosses = {")
+        for lvl, nid, name, loot in e["bosses"]:
             lines.append(f'        {{ {nid}, {lua_str(name)}, {lvl}, {{ {", ".join(map(str, loot))} }} }},')
             count_b += 1
             count_i += len(loot)

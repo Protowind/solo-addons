@@ -161,7 +161,7 @@ local function HandsScore()
     return main + off
 end
 
--- Returns diff vs the weakest equipped item in that slot, or nil / "cant"
+-- Returns diff vs the weakest equipped item in that slot (and that slot), or nil / "cant"
 local function Compare(link)
     if not link then return nil end
     local _, _, _, equipLoc, _, classID, subclassID = GetInfoInstant(link)
@@ -176,7 +176,7 @@ local function Compare(link)
     -- A two-hander replaces main hand and off hand together
     if equipLoc == "INVTYPE_2HWEAPON" then
         local hands = HandsScore()
-        return hands and score - hands
+        return hands and score - hands, MAIN_HAND
     end
 
     -- An off-hand item while wielding a two-hander means giving the two-hander up
@@ -184,7 +184,7 @@ local function Compare(link)
         local mainLink = GetInventoryItemLink("player", MAIN_HAND)
         if mainLink and select(4, GetInfoInstant(mainLink)) == "INVTYPE_2HWEAPON" then
             local main = EquippedScore(MAIN_HAND)
-            return main and score - main
+            return main and score - main, OFF_HAND
         end
     end
 
@@ -195,13 +195,13 @@ local function Compare(link)
         if offIsWeapon then slots = { MAIN_HAND, OFF_HAND } end
     end
 
-    local worst
+    local worst, worstSlot
     for _, slot in ipairs(slots) do
         local equipped = EquippedScore(slot)
         if equipped == nil then return nil end
-        if not worst or equipped < worst then worst = equipped end
+        if not worst or equipped < worst then worst, worstSlot = equipped, slot end
     end
-    return score - worst
+    return score - worst, worstSlot
 end
 SoloGear_Compare = Compare   -- for SoloLoot's upgrade marks
 
@@ -357,6 +357,99 @@ local function PickRewardWhenReady(announce)
     end
 end
 
+-- Auto-equip ---------------------------------------------------------------
+-- Out of combat, after your bags change: the biggest upgrade in your bags goes on, one item at a
+-- time, with a chat line. Weapons and bind-on-equip items ask first (a popup), unless
+-- /sg autoweapons is on. Items you take off yourself are left alone for the rest of the session.
+-- /sg auto toggles it all.
+
+local BAGS = NUM_BAG_SLOTS or 4
+local NumSlots = (C_Container and C_Container.GetContainerNumSlots) or GetContainerNumSlots
+local Pickup = (C_Container and C_Container.PickupContainerItem) or PickupContainerItem
+local MIN_GAIN = 0.5                 -- ignore tiny score differences
+local ignored, asked = {}, {}        -- item links: taken off by you / already asked about
+local equipping = false
+local worn = {}                      -- slot -> link, to spot what you take off yourself
+
+local function IsBoundInBag(bag, slot)
+    if C_Item and C_Item.IsBound and ItemLocation then
+        local ok, bound = pcall(C_Item.IsBound, ItemLocation:CreateFromBagAndSlot(bag, slot))
+        if ok then return bound end
+    end
+    return true
+end
+
+local function DoEquip(bag, slot, invSlot, link, gain)
+    if InCombatLockdown() or CursorHasItem() then return end
+    if GetBagLink(bag, slot) ~= link then return end   -- moved since
+    local old = GetInventoryItemLink("player", invSlot)
+    equipping = true
+    Pickup(bag, slot)
+    EquipCursorItem(invSlot)
+    if CursorHasItem() then ClearCursor() end
+    C_Timer.After(1, function() equipping = false end)
+    print(string.format("SoloGear: equipped %s |cff40ff40(+%.1f)|r%s", link, gain, old and (" instead of " .. old) or ""))
+end
+
+StaticPopupDialogs.SOLOGEAR_EQUIP = {
+    text = "SoloGear: equip %s?\n|cff40ff40Upgrade +%s|r",
+    button1 = YES, button2 = NO, timeout = 0, whileDead = false, hideOnEscape = true,
+    OnAccept = function(_, d) DoEquip(d.bag, d.slot, d.invSlot, d.link, d.gain) end,
+}
+
+local function FindUpgrade()
+    local best
+    for bag = 0, BAGS do
+        for slot = 1, (NumSlots(bag) or 0) do
+            local link = GetBagLink(bag, slot)
+            if link and not ignored[link] then
+                local ok, gain, invSlot = pcall(Compare, link)
+                if ok and type(gain) == "number" and gain > MIN_GAIN and invSlot and (not best or gain > best.gain) then
+                    best = { bag = bag, slot = slot, link = link, gain = gain, invSlot = invSlot }
+                end
+            end
+        end
+    end
+    return best
+end
+
+local pending = false
+local function AutoEquip()
+    pending = false
+    if not SoloGearChar or SoloGearChar.autoEquip == false then return end
+    if InCombatLockdown() or UnitIsDeadOrGhost("player") or CursorHasItem() then return end
+    local up = FindUpgrade()
+    if not up then return end
+    local classID = select(6, GetInfoInstant(up.link))
+    local weapon = classID == WEAPON_CLASS
+    local bound = IsBoundInBag(up.bag, up.slot)
+    if (weapon and not SoloGearChar.autoWeapons) or not bound then
+        if asked[up.link] then return end
+        asked[up.link] = true
+        StaticPopup_Show("SOLOGEAR_EQUIP", up.link, string.format("%.1f", up.gain), up)
+        return
+    end
+    DoEquip(up.bag, up.slot, up.invSlot, up.link, up.gain)
+end
+
+local function QueueAutoEquip()
+    if pending then return end
+    pending = true
+    C_Timer.After(0.6, AutoEquip)
+end
+
+local function OnEquipmentChanged(invSlot)
+    local now = GetInventoryItemLink("player", invSlot)
+    local before = worn[invSlot]
+    if not equipping and before and before ~= now then ignored[before] = true end   -- you swapped it
+    worn[invSlot] = now
+    wipe(scoreCache)
+end
+
+local function RememberWorn()
+    for s = 1, 19 do worn[s] = GetInventoryItemLink("player", s) end
+end
+
 -- Events -----------------------------------------------------------------
 
 local frame = CreateFrame("Frame")
@@ -364,8 +457,15 @@ frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_LEVEL_UP")
 frame:RegisterEvent("QUEST_COMPLETE")
 frame:RegisterEvent("QUEST_DETAIL")
-frame:SetScript("OnEvent", function(_, event)
-    if event == "QUEST_COMPLETE" or event == "QUEST_DETAIL" then
+frame:RegisterEvent("BAG_UPDATE_DELAYED")
+frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+frame:SetScript("OnEvent", function(_, event, arg1)
+    if event == "BAG_UPDATE_DELAYED" or event == "PLAYER_REGEN_ENABLED" then
+        if classFile then QueueAutoEquip() end
+    elseif event == "PLAYER_EQUIPMENT_CHANGED" then
+        OnEquipmentChanged(arg1)
+    elseif event == "QUEST_COMPLETE" or event == "QUEST_DETAIL" then
         -- Run after Blizzard has laid out the reward buttons
         local announce = event == "QUEST_COMPLETE"
         C_Timer.After(0, function() PickRewardWhenReady(announce) end)
@@ -373,9 +473,12 @@ frame:SetScript("OnEvent", function(_, event)
         SoloGearChar = SoloGearChar or {}
         _, classFile = UnitClass("player")
         BuildWeights()
+        RememberWorn()
         C_Timer.NewTicker(0.5, ScanBags)   -- cheap: only open bags are scanned
+        QueueAutoEquip()
     else
         wipe(scoreCache)
+        QueueAutoEquip()   -- level up: items you can now wear
     end
 end)
 
@@ -427,8 +530,19 @@ SlashCmdList.SOLOGEAR = function(msg)
     elseif cmd == "primary" and arg == "auto" then
         SoloGearChar.primary = nil
         BuildWeights()
+    elseif cmd == "auto" then
+        SoloGearChar.autoEquip = SoloGearChar.autoEquip == false
+        print("SoloGear: auto-equip " .. (SoloGearChar.autoEquip and "|cff40ff40on|r" or "|cffff6060off|r"))
+        if SoloGearChar.autoEquip then wipe(ignored) wipe(asked) QueueAutoEquip() end
+        return
+    elseif cmd == "autoweapons" then
+        SoloGearChar.autoWeapons = not SoloGearChar.autoWeapons
+        print("SoloGear: weapons " .. (SoloGearChar.autoWeapons and "equip on their own" or "ask first"))
+        return
     end
     local primary = SoloGearChar.primary or CLASS_PRIMARY[classFile] or "str"
-    print(string.format("SoloGear: %s, primary stat |cff40ff40%s|r%s  (/sg primary str | agi | int | auto, /sg bis)",
-        classFile, primary, SoloGearChar.primary and " (set by you)" or " (class default)"))
+    print(string.format("SoloGear: %s, primary stat |cff40ff40%s|r%s, auto-equip %s, weapons %s",
+        classFile, primary, SoloGearChar.primary and " (set by you)" or " (class default)",
+        SoloGearChar.autoEquip == false and "off" or "on", SoloGearChar.autoWeapons and "auto" or "ask first"))
+    print("SoloGear: /sg primary str | agi | int | auto, /sg bis, /sg auto, /sg autoweapons")
 end

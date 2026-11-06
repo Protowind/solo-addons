@@ -1,0 +1,8 @@
+## Interface: 16001, 120105
+## Title: SoloPlates
+## Notes: Flat, ElvUI-style skin for the game's own nameplates: flat bars, thin black border, dark background, outlined names. /splates
+## Author: Protowind
+## Version: 1.0
+## SavedVariables: SoloPlatesDB
+## OptionalDeps: SoloErrors
+SoloPlates.lua

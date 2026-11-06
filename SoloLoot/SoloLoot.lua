@@ -6,7 +6,7 @@
 -- Minimap button: click to open, drag to move. /sloot or /loot toggles; /sloot minimap shows or hides the button.
 
 local W, H = 820, 520
-local TOP, BOTTOM = 70, 34                 -- space above and below the panels
+local TOP, BOTTOM = 70, 48                 -- space above and below the panels
 local PANEL_H = H - TOP - BOTTOM
 local HEADER = 24                          -- panel title strip
 local ROW, ITEM_ROW = 18, 36
@@ -70,8 +70,8 @@ local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 22, 16)
 footer:SetPoint("BOTTOMRIGHT", -22, 16)
 footer:SetJustifyH("LEFT")
-footer:SetText("Drops: QuestieDB, no drop rates; some raid loot missing. Sets: game data.   "
-    .. "|cffffd040Shift-click|r link   |cffffd040Ctrl-click|r preview   |cff33ff33+|r upgrade")
+footer:SetText("Bosses, levels, notable loot: Data from ForeverDB.net (https://foreverdb.net). Drops: QuestieDB. "
+    .. "|cffffd040Shift-click|r link  |cffffd040Ctrl-click|r preview  |cff33ff33+|r upgrade")
 
 -- Panels ------------------------------------------------------------------
 
@@ -265,10 +265,75 @@ end
 
 local colA = MakeList(panelA, LIST_ROWS, ROW, TextRow)
 colA.Refresh = RefreshText
-local colB = MakeList(panelB, LIST_ROWS, ROW, TextRow)
+local colB = MakeList(panelB, LIST_ROWS - 3, ROW, TextRow)
 colB.Refresh = RefreshText
 local colItems = MakeList(panelC, ITEM_ROWS, ITEM_ROW, ItemRow)
 colItems.Refresh = RefreshItems
+
+-- Entrance (bottom of the boss panel) ---------------------------------------
+-- Classic instances: the Map table's corpse point (just outside the entrance), turned into zone
+-- coordinates by the client. New Forever dungeons: Blizzard's description only.
+
+local entrance = CreateFrame("Frame", nil, panelB)
+entrance:SetPoint("BOTTOMLEFT", 5, 5)
+entrance:SetPoint("BOTTOMRIGHT", -5, 5)
+entrance:SetHeight(48)
+local entLine = entrance:CreateTexture(nil, "ARTWORK")
+entLine:SetPoint("TOPLEFT")
+entLine:SetPoint("TOPRIGHT")
+entLine:SetHeight(1)
+entLine:SetColorTexture(GOLD[1], GOLD[2], GOLD[3], 0.35)
+local entText = entrance:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+entText:SetPoint("TOPLEFT", 6, -6)
+entText:SetPoint("RIGHT", -6, 0)
+entText:SetJustifyH("LEFT")
+entText:SetSpacing(2)
+local entButton = CreateFrame("Button", nil, entrance, "UIPanelButtonTemplate")
+entButton:SetSize(110, 20)
+entButton:SetPoint("BOTTOMRIGHT", -2, 2)
+entButton:SetText("Show on map")
+
+local function EntranceSpot(inst)
+    local e = inst and inst.entrance
+    if not (e and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return end
+    local world = CreateVector2D(e[2], e[3])
+    local ok, mapID, pos = pcall(C_Map.GetMapPosFromWorldPos, e[1], world)
+    if not (ok and mapID and pos) then return end
+    -- Narrow a continent answer down to the zone at that spot
+    local x, y = pos:GetXY()
+    local child = C_Map.GetMapInfoAtPosition and C_Map.GetMapInfoAtPosition(mapID, x, y)
+    if child and child.mapID and child.mapID ~= mapID then
+        local ok2, _, zpos = pcall(C_Map.GetMapPosFromWorldPos, e[1], world, child.mapID)
+        if ok2 and zpos then mapID, pos = child.mapID, zpos x, y = pos:GetXY() end
+    end
+    local info = C_Map.GetMapInfo(mapID)
+    return mapID, x, y, info and info.name or "?"
+end
+
+local function ShowEntrance(inst)
+    local mapID, x, y, zone = EntranceSpot(inst)
+    if mapID then
+        entText:SetText("|cffffd040Entrance|r  " .. zone .. string.format("  %.1f, %.1f", x * 100, y * 100))
+        entButton:Show()
+        entButton:SetScript("OnClick", function()
+            if C_Map.CanSetUserWaypointOnMap and not C_Map.CanSetUserWaypointOnMap(mapID) then
+                print("|cff40c0ffSoloLoot|r: this map takes no pin") return
+            end
+            local ok = pcall(function()
+                C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(mapID, x, y))
+                if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then C_SuperTrack.SetSuperTrackedUserWaypoint(true) end
+            end)
+            print("|cff40c0ffSoloLoot|r: " .. (ok and ("pin set: " .. inst.name .. ", " .. zone .. string.format(" %.1f, %.1f", x * 100, y * 100))
+                or "could not set a map pin here"))
+        end)
+    elseif inst and inst.where then
+        entText:SetText("|cffffd040Entrance|r  " .. inst.where .. "\n|cff999999(Blizzard's description; no exact spot yet)|r")
+        entButton:Hide()
+    else
+        entText:SetText("|cffffd040Entrance|r  |cff999999unknown|r")
+        entButton:Hide()
+    end
+end
 
 local emptyText = panelC:CreateFontString(nil, "OVERLAY", "GameFontDisable")
 emptyText:SetPoint("TOPLEFT", 12, -(HEADER + 14))
@@ -295,14 +360,18 @@ local function LevelText(lo, hi)
 end
 
 local function BuildDungeons()
-    local data, inRaids = { { heading = "Dungeons" } }, false
+    local data, heading = {}, nil
     for i, inst in ipairs(SoloLootInstances) do
-        if inst.raid and not inRaids then
-            data[#data + 1] = { heading = "Raids" }
-            inRaids = true
+        local h = inst.announced == false and "Not announced for Forever yet" or (inst.raid and "Raids" or "Dungeons")
+        if h ~= heading then
+            data[#data + 1] = { heading = h }
+            heading = h
         end
+        local name = inst.name
+        if inst.new then name = name .. " |cff40ff40new|r" end
+        if inst.announced == false then name = "|cff9d9d9d" .. inst.name .. "|r" end
         data[#data + 1] = {
-            text = inst.name, right = LevelText(inst.min, inst.max), selected = i == selInstance,
+            text = name, right = LevelText(inst.min, inst.max), selected = i == selInstance,
             onClick = function() selInstance, selBoss = i, 1 colB.offset, colItems.offset = 0, 0 Refresh() end,
         }
     end
@@ -311,14 +380,18 @@ local function BuildDungeons()
     local inst = SoloLootInstances[selInstance]
     local bosses = {}
     for j, boss in ipairs(inst and inst.bosses or {}) do
+        local notable = boss[1] == 0 and boss[2]:find("^Notable")
         bosses[#bosses + 1] = {
-            text = boss[2], right = #boss[4] == 0 and "|cff777777?|r" or tostring(boss[3]), selected = j == selBoss,
+            text = notable and ("|cff66ccff" .. boss[2] .. "|r") or boss[2],
+            right = #boss[4] == 0 and "|cff777777?|r" or (boss[3] > 0 and tostring(boss[3]) or ""),
+            selected = j == selBoss,
             onClick = function() selBoss = j colItems.offset = 0 Refresh() end,
         }
     end
     colB.data = bosses
     local boss = inst and inst.bosses[selBoss]
     colItems.data = boss and boss[4] or {}
+    ShowEntrance(inst)
     panelA.label:SetText("Instances")
     panelB.label:SetText(inst and (inst.name .. "  |cff999999" .. LevelText(inst.min, inst.max) .. "|r") or "Bosses")
     panelC.label:SetText(boss and boss[2] or "Loot")
@@ -369,6 +442,7 @@ end
 
 function Refresh()
     if tab == "dungeons" then BuildDungeons() else BuildSets() end
+    entrance:SetShown(tab == "dungeons")
     classCheck:SetShown(tab == "sets")
     setInfo:SetShown(tab == "sets")
     colB:SetShown(tab == "dungeons")

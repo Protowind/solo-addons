@@ -142,3 +142,81 @@ Already tested: 1H swing timing (within 0.15 s).
 - [x] Minimap button: shows on the minimap edge, click opens and closes the window, drag moves it round the edge, position kept after /reload
 - [x] `/sloot minimap` hides the button; again shows it
 - [x] Look: three framed panels with gold title strips; Dungeons and Raids headings in the instance list; selected tab highlighted (screenshot 2026-11-06)
+
+## SoloPlates (new 2026-11-06)
+
+- [ ] /reload: enemy nameplates are flat bars with a thin black edge and dark background; names outlined
+- [ ] Bars keep Blizzard's colours (red hostile, yellow neutral) and drain as the mob loses health
+- [ ] The flat look stays during and after a fight (Blizzard does not put the old texture back)
+- [ ] Cast bar of a casting mob (Razormane Thornweaver) is flat too
+- [ ] `/splates height 12` and `/splates size 12` change the plates (height only out of combat)
+- [ ] No Lua errors in combat or in a dungeon
+- [ ] If anything looks wrong: target the mob, `/splates dump`, /reload, tell Claude
+
+## SoloUI (new 2026-11-06)
+
+- [ ] /reload: flat player frame left of centre, Blizzard's player frame gone; no Lua errors
+- [ ] Target a mob: flat target frame right of centre with level, name, health and power; Elite/Rare tag on elites
+- [ ] Your debuffs (Rupture, Garrote) show above the target frame with a timer spiral
+- [ ] Target of target small frame under the target frame when the mob targets you
+- [ ] Health numbers in and out of combat (in combat they may vanish if the client keeps them secret: bars must still move)
+- [ ] Left-click a frame targets it; right-click opens the unit menu; works in combat
+- [ ] Party: join a group, 4 party frames top-left with class colours
+- [ ] Shift-drag moves a frame; position kept after /reload; Reset positions puts them back
+- [ ] `/sui`: Solo addons window lists every addon, loaded state and notes; each button opens that addon's options or status
+- [ ] Untick an addon, Reload to apply: it is off; tick it again to bring it back
+- [ ] Untick "Hide Blizzard's frames", reload: Blizzard's frames come back alongside
+
+## SoloLoot 1.1 (ForeverDB data)
+
+- [ ] Instance list: Dungeons, Raids, then "Not announced for Forever yet" (greyed: Molten Core, Blackwing Lair, AQ, Naxxramas, Zul'Gurub)
+- [ ] New Forever dungeons marked green "new": The Hall of Thanes, Ruins of Lordaeron, Excavation Site: Wetlands, City of Dalaran
+- [ ] Ragefire Chasm 13-18 lists Oggleflint, Taragaman, Jergosh, Bazzalan and a blue "Notable loot (ForeverDB)" row
+- [ ] Footer shows the ForeverDB.net credit with the link, on two lines without overlapping the panels
+- [ ] Ragefire Chasm: "Entrance  Orgrimmar x, y" under the boss list; Show on map sets a pin (arrow at the top of the screen) at the Cleft of Shadow entrance
+- [ ] Wailing Caverns entrance in The Barrens near the Lushwater Oasis; Deadmines in Westfall
+- [ ] The Hall of Thanes shows "Beneath Ironforge, Dun Morogh" and no map button
+
+## SoloGear auto-equip (new 2026-11-06)
+
+- [ ] Loot or get a quest reward that is a bound armour upgrade: it goes on by itself out of combat, chat says "equipped X (+n) instead of Y"
+- [ ] A weapon upgrade: popup "equip X? Upgrade +n"; Yes equips it, No leaves it (asks once per session)
+- [ ] A bind-on-equip upgrade: popup first; Yes then shows the game's own "bind this item?" question
+- [ ] Take an item off yourself and put the old one on: SoloGear does not swap it back
+- [ ] Nothing happens in combat; it catches up when combat ends
+- [ ] `/sg auto` turns it off and on; `/sg autoweapons` lets weapons equip without asking; `/sg` shows both settings
+
+## SoloMeter (new 2026-11-06)
+
+- [ ] /reload: a small dark window bottom right says "Damage · current" with "no data yet"; if it says "meter not available", run `/meter debug` and check the game's own meter is on (Options > Advanced > Damage Meter)
+- [ ] `/meter test`: eight class-coloured bars, your name in gold on the first, numbers like "18.2k (61.2, 25%)"; `/meter test` again turns it off
+- [ ] Fight a mob: your bar appears while fighting with a total and per-second figure (no % in combat); after the fight the % appears
+- [ ] Click the header: menu with the five modes, Current fight, Overall, Reset data, Hide. Pick Healing, then Damage again
+- [ ] Right-click the header: swaps current and overall (header text changes). Mouse wheel on the header cycles the modes
+- [ ] After a fight, click your bar: spell list with icons (Sinister Strike, melee...), numbers per spell; right-click a bar or click the header goes back
+- [ ] In a group: the other players' bars show with their class colours; your bar stays on the last row when you are further down
+- [ ] Reset button (top right) or `/meter reset`: bars clear, "no data yet"
+- [ ] Shift-drag the header to move; position kept after /reload. `/meter pos` puts it back bottom right
+- [ ] `/meter rows 5`, `/meter scale 1.3`, `/meter width 300`, `/meter height 22`: window resizes; `/meter class` greys the bars
+- [ ] `/meter debug` after a fight, then /reload: `SoloMeterDB.debug` in `WTF\Account\<account>\SavedVariables\SoloMeter.lua` lists the session, source and spell field names (tell Claude what it says)
+- [ ] `/sui`: SoloMeter row shows loaded, its `/meter` button toggles the window
+- [ ] Out of combat, click the header: under Overall a "past fights" list with the last six mobs and fight lengths. Pick one: header shows "Damage · <mob> 0:33" and that fight's bars; right-click the header goes back to current
+- [ ] In combat, click your bar: one line "spells readable after the fight" instead of rows of "?"
+
+## SoloErrors (new 2026-11-06)
+
+- [x] (2026-11-06) /reload: no chat line from SoloErrors (nothing saved yet), or "N saved errors" if something errored. `/errors` says "no errors saved"; if it adds "no seterrorhandler on this client", tell Claude
+- [x] (2026-11-06, logged x6 with stack) `/errors test`: chat line "new error in SoloErrors (1 so far, /errors to list): ...test error"; no Blizzard popup
+- [ ] `/errors`: the test error listed with x1; `/errors 1` shows it with a stack; `/errors test` again then `/errors`: x2
+- [ ] `/errors popup`, then `/errors test`: Blizzard's error window also opens; `/errors popup` again turns it off
+- [ ] /reload: "1 saved error" line at login; `WTF\Account\<account>\SavedVariables\SoloErrors.lua` holds it; `/errors clear` empties it
+- [ ] Play for a while: any addon error shows as one chat line, not a repeating popup; after /reload Claude reads the file
+- [ ] `/sui`: SoloErrors row shows loaded
+
+## SoloMeter fight capture (2026-11-06)
+
+- [ ] Fight a mob to the end, wait 3 s, `/meter fights`: one line "1. <time> <zone> vs <mob>: <n>s, you <total> (<n>/s)"
+- [ ] Two more fights: three lines. `/meter capture now` adds one more
+- [ ] /reload, then tell Claude: `SoloMeterDB.fights` and `SoloMeterDB.probe` in `WTF\Account\<account>\SavedVariables\SoloMeter.lua` are read for the real field names and which values are secret in combat
+- [ ] `/meter capture` says "fight capture off"; a fight adds no line; `/meter capture` again turns it on
+- [ ] `/meter capture clear`: `/meter fights` says none saved

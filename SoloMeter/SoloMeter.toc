@@ -1,0 +1,8 @@
+## Interface: 16001
+## Title: SoloMeter
+## Notes: Damage meter from the game's own C_DamageMeter: damage, healing, damage taken, interrupts, deaths; current fight or overall; click a bar for its spells. /meter
+## Author: Protowind
+## Version: 1.0
+## SavedVariables: SoloMeterDB
+## OptionalDeps: SoloErrors
+SoloMeter.lua
