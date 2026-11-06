@@ -1,5 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-    <!-- One map icon. SoloMapPinMixin is filled in SoloMap.lua -->
+    <!-- One map icon. SoloMapPinMixin is filled in SoloMap.lua. No OnEnter/OnLeave here: the map
+         canvas asserts new pins have none and sets them to OnMouseEnter/OnMouseLeave itself. -->
     <Frame name="SoloMapPinTemplate" mixin="SoloMapPinMixin" enableMouse="true" virtual="true">
         <Size x="16" y="16"/>
         <Layers>
@@ -9,8 +10,6 @@
         </Layers>
         <Scripts>
             <OnLoad method="OnLoad"/>
-            <OnEnter method="OnMouseEnter"/>
-            <OnLeave method="OnMouseLeave"/>
         </Scripts>
     </Frame>
 </Ui>

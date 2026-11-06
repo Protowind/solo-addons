@@ -2,7 +2,7 @@
 ## Title: SoloMap
 ## Notes: World map extras: player and cursor coordinates, every flight master (known or not), NPC services you have visited, unexplored areas shown. /smap
 ## Author: Protowind
-## Version: 1.1
+## Version: 1.2
 ## SavedVariables: SoloMapDB
 ## SavedVariablesPerCharacter: SoloMapChar
 ## OptionalDeps: SoloErrors

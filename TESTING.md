@@ -82,6 +82,7 @@ Already tested: 1H swing timing (within 0.15 s).
 
 ## SoloGear v1.1
 
+- [ ] v1.2: quest reward choice with no upgrade: "Best gold" label on the dearest item and the chat line "no upgrade, sells for ..." with coin icons; no error
 - [ ] `/sg bis`: slots listed weakest first with scores; upgrade sources shown near level 13-18
 
 ## SoloCombo (new 2026-11-05)
@@ -108,6 +109,7 @@ Already tested: 1H swing timing (within 0.15 s).
 
 ## SoloMap (new 2026-11-06)
 
+- [ ] v1.2: talk to a new gossip NPC, open the map: no "Blizzard_MapCanvas assertion failed" in `/errors`; all saved service icons show and their tooltips still work
 - [x] Open the map: "You: x, y   Cursor: x, y" under the map (screenshot 2026-11-06)
 - [x] Click the coordinate bar: box with the position selected; Ctrl+C closes it and pastes elsewhere (pasted "Mulgore 46.1, 95.8", 2026-11-06)
 - [ ] Right-click the bar: box with the last spot the cursor was on the map

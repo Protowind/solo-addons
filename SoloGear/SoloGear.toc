@@ -2,7 +2,7 @@
 ## Title: SoloGear
 ## Notes: Marks armour and jewellery upgrades in bags and tooltips, and picks the best quest reward (upgrade first, else highest sell price).
 ## Author: Protowind
-## Version: 1.1
+## Version: 1.2
 ## SavedVariablesPerCharacter: SoloGearChar
 ## OptionalDeps: SoloErrors
 Upgrades.lua

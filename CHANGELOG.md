@@ -4,6 +4,11 @@ Own WoW addons and data tools. Newest first.
 
 ## 2026-11-07
 
+### Lua error fixes (from the SoloErrors log)
+- **SoloMap 1.2**: "Blizzard_MapCanvas.lua:309: assertion failed!" (7 times, on gossip with a new NPC). The pin template set OnEnter/OnLeave in XML; the map canvas asserts new pins have none and sets them itself. Removed from `SoloMap.xml`; tooltips come from the canvas calling OnMouseEnter/OnMouseLeave. The error also stopped the rest of that refresh's icons.
+- **SoloGear 1.2**: `GetCoinTextureString` is nil on this client, so a reward choice with no upgrade errored and never showed "Best gold". Now `C_CurrencyInfo.GetCoinTextureString`, then the old global or `GetMoneyString`, then plain g/s/c text.
+- Not yet tested in game.
+
 ### Guides menu in the SoloStats top bar
 - **SoloStats 2.1**: "Guides v" at the left end of the top bar (top bar layout only, theme colours, text size follows the bar). Left-aligned text moves right of it.
 - **SoloCoach 1.3**: the menu now lives in SoloCoach (`SoloCoach_ToggleGuidesMenu`), shared by SoloStats and SoloUI; Escape closes it.

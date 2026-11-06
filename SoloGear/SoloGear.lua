@@ -307,6 +307,16 @@ local function LabelReward(i, label)
     button.SoloGearPick:Show()
 end
 
+-- Money as text. GetCoinTextureString is gone on this client (moved to C_CurrencyInfo).
+local function Coins(copper)
+    local fn = (C_CurrencyInfo and C_CurrencyInfo.GetCoinTextureString) or GetCoinTextureString or GetMoneyString
+    if fn then
+        local ok, s = pcall(fn, copper)
+        if ok and s then return s end
+    end
+    return string.format("%dg %ds %dc", math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100)
+end
+
 -- Returns true if item data was missing and nothing was shown yet
 local function PickReward(final, announce)
     ClearRewardLabels()
@@ -339,7 +349,7 @@ local function PickReward(final, announce)
     elseif bestPriceIndex and bestPrice > 0 then
         index = bestPriceIndex
         label = "|cffffd040Best gold|r"
-        why = "no upgrade, sells for " .. GetCoinTextureString(bestPrice)
+        why = "no upgrade, sells for " .. Coins(bestPrice)
     end
     if index then
         LabelReward(index, label)
