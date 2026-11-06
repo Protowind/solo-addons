@@ -62,71 +62,17 @@ local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 subtitle:SetPoint("LEFT", title, "RIGHT", 10, -1)
 subtitle:SetText("one place for all of them")
 
--- Guides menu (top bar) -------------------------------------------------------
--- Lists Claude's notes and the guides in SoloCoach\Guides.lua (rogue, leatherworking);
--- a pick opens it in the SoloCoach panel. Greyed out when SoloCoach is off.
+-- Guides menu (top right) ------------------------------------------------------
+-- Opens SoloCoach's shared menu: Claude's notes and the guides in SoloCoach\Guides.lua.
+-- Greyed out when SoloCoach is off.
 
-local guidesMenu = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 local guidesButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 guidesButton:SetSize(96, 22)
 guidesButton:SetPoint("TOPRIGHT", -40, -14)
 guidesButton:SetText("Guides  v")
-guidesButton:SetScript("OnClick", function() guidesMenu:SetShown(not guidesMenu:IsShown()) end)
-
-guidesMenu:SetPoint("TOPRIGHT", guidesButton, "BOTTOMRIGHT", 0, -2)
-guidesMenu:SetWidth(230)
-guidesMenu:SetFrameStrata("DIALOG")
-guidesMenu:EnableMouse(true)
-Backdrop(guidesMenu, "Interface\\Tooltips\\UI-Tooltip-Background", "Interface\\Tooltips\\UI-Tooltip-Border", 14, 3)
-guidesMenu:SetBackdropColor(0, 0, 0, 0.95)
-guidesMenu:SetBackdropBorderColor(0.6, 0.5, 0.25, 0.9)
-guidesMenu:Hide()
-
-local menuItems = {}
-local MENU_ROW = 20
-
-local function MenuItem(i)
-    local b = menuItems[i]
-    if b then return b end
-    b = CreateFrame("Button", nil, guidesMenu)
-    b:SetHeight(MENU_ROW)
-    b:SetPoint("TOPLEFT", 6, -6 - (i - 1) * MENU_ROW)
-    b:SetPoint("TOPRIGHT", -6, -6 - (i - 1) * MENU_ROW)
-    local hl = b:CreateTexture(nil, "HIGHLIGHT")
-    hl:SetAllPoints()
-    hl:SetColorTexture(1, 0.82, 0, 0.18)
-    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    b.text:SetPoint("LEFT", 6, 0)
-    b.text:SetPoint("RIGHT", -6, 0)
-    b.text:SetJustifyH("LEFT")
-    b:SetScript("OnClick", function(self)
-        guidesMenu:Hide()
-        if self.run then self.run() end
-    end)
-    menuItems[i] = b
-    return b
-end
-
-local function BuildGuidesMenu()
-    local entries = {}
-    if SoloCoach_ShowNotes then
-        entries[#entries + 1] = { "|cffffd040Claude's latest notes|r", SoloCoach_ShowNotes }
-    end
-    if SoloCoach_ShowGuide then
-        for i, g in ipairs(SoloCoachGuides or {}) do
-            entries[#entries + 1] = { g.name, function() SoloCoach_ShowGuide(i) end }
-        end
-    end
-    for i, e in ipairs(entries) do
-        local b = MenuItem(i)
-        b.text:SetText(e[1])
-        b.run = e[2]
-        b:Show()
-    end
-    for i = #entries + 1, #menuItems do menuItems[i]:Hide() end
-    guidesMenu:SetHeight(12 + #entries * MENU_ROW)
-    guidesButton:SetEnabled(#entries > 0)
-end
+guidesButton:SetScript("OnClick", function(self)
+    if SoloCoach_ToggleGuidesMenu then SoloCoach_ToggleGuidesMenu(self, "TOPRIGHT", "BOTTOMRIGHT") end
+end)
 
 local function Section(y, height, label)
     local p = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -269,8 +215,7 @@ footer:SetText("/sui opens this window")
 
 frame:SetScript("OnShow", function()
     RefreshRows()
-    guidesMenu:Hide()
-    BuildGuidesMenu()
+    guidesButton:SetEnabled(SoloCoach_ToggleGuidesMenu ~= nil)
     ShowScale()
     reloadButton:SetShown(reloadNeeded)
 end)

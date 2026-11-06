@@ -2,7 +2,7 @@
 ## Title: SoloCoach
 ## Notes: Saves a snapshot of your character for Claude (every minute while playing, written on /reload) and shows Claude's notes in game. /coach
 ## Author: Protowind
-## Version: 1.2
+## Version: 1.3
 ## SavedVariables: SoloCoachDB
 ## SavedVariablesPerCharacter: SoloCoachChar
 ## OptionalDeps: SoloErrors

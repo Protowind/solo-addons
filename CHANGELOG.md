@@ -4,6 +4,12 @@ Own WoW addons and data tools. Newest first.
 
 ## 2026-11-07
 
+### Guides menu in the SoloStats top bar
+- **SoloStats 2.1**: "Guides v" at the left end of the top bar (top bar layout only, theme colours, text size follows the bar). Left-aligned text moves right of it.
+- **SoloCoach 1.3**: the menu now lives in SoloCoach (`SoloCoach_ToggleGuidesMenu`), shared by SoloStats and SoloUI; Escape closes it.
+- **SoloUI 1.2**: its Guides button calls the shared menu; own menu code removed.
+- Not yet tested in game.
+
 ### Guides menu
 - **SoloCoach 1.2**: new `Guides.lua` with five guides from ROGUE.md and LEATHERWORKING.md: rogue talents (Combat), rotation, gear and weapons, milestones; leatherworking 1-150. Kept apart from `Advice.lua`, so new notes never wipe them (the 00:10 notes had the rogue block pasted in; removed again). `/coach guide` lists them, `/coach guide <n>` opens one. The panel now scrolls to the top on each open.
 - **SoloUI 1.1**: "Guides" button at the top right of the `/sui` window. Its menu lists Claude's latest notes and every guide; a pick opens it in the SoloCoach panel. Greyed out without SoloCoach. Not yet tested in game.

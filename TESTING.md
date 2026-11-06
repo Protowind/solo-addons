@@ -4,6 +4,7 @@ Tick each box when done. Tell Claude what failed (a screenshot helps). Updated 2
 
 ## SoloStats (v2.1)
 
+- [ ] Top bar layout: "Guides v" at the left end in the theme colour; click opens the menu under it (Claude's notes + 5 guides), a pick opens the SoloCoach panel; click again or Escape closes it. With text aligned left, the readout starts after the button. Not shown in Stacked or Row
 All tested 2026-10-18 (screenshots: every layout, background, lock, text size, themes, both resets, coordinates match the minimap, bags 0 / 26 red when full).
 
 - [x] /reload: top bar now says "Kills to level: N", and latency around 190 ms is yellow (not red)
@@ -156,7 +157,7 @@ Already tested: 1H swing timing (within 0.15 s).
 
 ## SoloUI (new 2026-11-06)
 
-- [ ] `/sui`: Guides button top right (left of the close button); click lists Claude's latest notes and 5 guides; a pick opens it in the SoloCoach panel, scrolled to the top; menu closes
+- [ ] `/sui`: Guides button top right (left of the close button) opens the same menu as the SoloStats top bar, right-aligned under the button
 - [ ] /reload: flat player frame left of centre, Blizzard's player frame gone; no Lua errors
 - [ ] Target a mob: flat target frame right of centre with level, name, health and power; Elite/Rare tag on elites
 - [ ] Your debuffs (Rupture, Garrote) show above the target frame with a timer spiral

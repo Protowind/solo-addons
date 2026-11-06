@@ -250,6 +250,71 @@ end
 SoloCoach_ShowNotes = ShowAdvice
 SoloCoach_ShowGuide = ShowGuide
 
+-- Guides menu: one dropdown shared by the SoloStats top bar and the SoloUI window.
+-- SoloCoach_ToggleGuidesMenu(anchor, point, relPoint) opens it under the anchor frame.
+local MENU_ROW = 20
+local menu = CreateFrame("Frame", "SoloCoachGuidesMenu", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+menu:SetWidth(230)
+menu:SetFrameStrata("FULLSCREEN_DIALOG")
+menu:SetClampedToScreen(true)
+menu:EnableMouse(true)
+menu:SetBackdrop({
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    edgeSize = 14, insets = { left = 3, right = 3, top = 3, bottom = 3 },
+})
+menu:SetBackdropColor(0, 0, 0, 0.95)
+menu:SetBackdropBorderColor(0.6, 0.5, 0.25, 0.9)
+menu:Hide()
+tinsert(UISpecialFrames, "SoloCoachGuidesMenu")   -- Escape closes it
+
+local menuItems = {}
+
+local function MenuItem(i)
+    local b = menuItems[i]
+    if b then return b end
+    b = CreateFrame("Button", nil, menu)
+    b:SetHeight(MENU_ROW)
+    b:SetPoint("TOPLEFT", 6, -6 - (i - 1) * MENU_ROW)
+    b:SetPoint("TOPRIGHT", -6, -6 - (i - 1) * MENU_ROW)
+    local hl = b:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints()
+    hl:SetColorTexture(1, 0.82, 0, 0.18)
+    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    b.text:SetPoint("LEFT", 6, 0)
+    b.text:SetPoint("RIGHT", -6, 0)
+    b.text:SetJustifyH("LEFT")
+    b:SetScript("OnClick", function(self)
+        menu:Hide()
+        self.run()
+    end)
+    menuItems[i] = b
+    return b
+end
+
+function SoloCoach_ToggleGuidesMenu(anchor, point, relPoint)
+    if menu:IsShown() and menu.anchor == anchor then
+        menu:Hide()
+        return
+    end
+    local entries = { { "|cffffd040Claude's latest notes|r", ShowAdvice } }
+    for i, g in ipairs(SoloCoachGuides or {}) do
+        entries[#entries + 1] = { g.name, function() ShowGuide(i) end }
+    end
+    for i, e in ipairs(entries) do
+        local b = MenuItem(i)
+        b.text:SetText(e[1])
+        b.run = e[2]
+        b:Show()
+    end
+    for i = #entries + 1, #menuItems do menuItems[i]:Hide() end
+    menu:SetHeight(12 + #entries * MENU_ROW)
+    menu:ClearAllPoints()
+    menu:SetPoint(point or "TOPLEFT", anchor, relPoint or "BOTTOMLEFT", 0, -2)
+    menu.anchor = anchor
+    menu:Show()
+end
+
 -- Events ------------------------------------------------------------------
 
 local CHANGE_EVENTS = {

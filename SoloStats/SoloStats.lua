@@ -70,6 +70,27 @@ text:SetSpacing(2)
 local FONT_PATH, DEFAULT_SIZE, FONT_FLAGS = text:GetFont()
 ns.DEFAULT_SIZE = DEFAULT_SIZE
 
+-- Guides button: left end of the top bar, opens SoloCoach's menu (Claude's notes, rogue and
+-- leatherworking guides). Top bar layout only; hidden when SoloCoach is off.
+local guides = CreateFrame("Button", nil, frame)
+guides:SetPoint("LEFT", 8, 0)
+guides.label = guides:CreateFontString(nil, "OVERLAY")
+guides.label:SetPoint("LEFT")
+local guidesHl = guides:CreateTexture(nil, "HIGHLIGHT")
+guidesHl:SetPoint("TOPLEFT", -4, 2)
+guidesHl:SetPoint("BOTTOMRIGHT", 4, -2)
+guidesHl:SetColorTexture(1, 0.82, 0, 0.15)
+guides:SetScript("OnClick", function(self)
+    if SoloCoach_ToggleGuidesMenu then SoloCoach_ToggleGuidesMenu(self, "TOPLEFT", "BOTTOMLEFT") end
+end)
+guides:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+    GameTooltip:AddLine("Guides")
+    GameTooltip:AddLine("Claude's notes, rogue and leatherworking guides.", 1, 1, 1)
+    GameTooltip:Show()
+end)
+guides:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 function ns.Theme()
     return ns.THEMES[db and db.theme] or ns.THEMES.classic
 end
@@ -391,13 +412,23 @@ function ns.ApplyLook()
     text:SetFont(FONT_PATH, db.size or DEFAULT_SIZE, FONT_FLAGS)
     text:SetTextColor(ns.RGB(t.text))
     text:ClearAllPoints()
+    local showGuides = db.layout == "bar" and SoloCoach_ToggleGuidesMenu ~= nil
+    guides:SetShown(showGuides)
+    if showGuides then
+        guides.label:SetFont(FONT_PATH, db.size or DEFAULT_SIZE, FONT_FLAGS)
+        guides.label:SetText("|cff" .. t.title .. "Guides|r " .. "|cff" .. t.muted .. "v|r")
+        guides:SetSize(guides.label:GetStringWidth(), guides.label:GetStringHeight() + 4)
+    end
     if db.layout == "bar" then
         local align = ns.ALIGNS[2]
         for _, a in ipairs(ns.ALIGNS) do
             if a.key == db.align then align = a end
         end
         text:SetJustifyH(align.point)
-        text:SetPoint(align.point, align.x, 0)
+        -- Left-aligned text starts after the Guides button
+        local x = align.x
+        if align.key == "left" and showGuides then x = x + guides:GetWidth() + 16 end
+        text:SetPoint(align.point, x, 0)
     else
         text:SetJustifyH("LEFT")
         text:SetPoint("TOPLEFT", Pad(), -Pad())
