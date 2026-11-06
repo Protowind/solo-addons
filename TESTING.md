@@ -125,3 +125,20 @@ Already tested: 1H swing timing (within 0.15 s).
 - [x] Ctrl-click the readout: box with your zone and coordinates selected; Ctrl+C copies and closes it (pasted "The Barrens 41.7, 58.6", 2026-11-06)
 - [ ] `/ss copy` does the same; Esc closes the box
 - [ ] Plain left-click and Shift-drag still behave as before
+
+## SoloLoot (new 2026-11-06)
+
+- [x] `/sloot` (or `/loot`) opens the window; Esc closes it; it can be dragged and stays put after /reload
+- [x] Opens on Ragefire Chasm or Wailing Caverns (fits level 13) (screenshot 2026-11-06)
+- [x] Click Ragefire Chasm > Taragaman: Cursed Felblade, Crystalline Cuffs, Subterranean Cape with icons and green/blue names (screenshot 2026-11-06)
+- [x] Items that show "Loading item ..." fill in after a second
+- [x] Hover an item: normal item tooltip
+- [x] Shift-click an item with the chat box open: link goes into chat
+- [x] Ctrl-click: preview window
+- [x] Green + on an item SoloGear rates as an upgrade (screenshot 2026-11-06)
+- [x] Mouse wheel scrolls each column
+- [x] Item sets tab: list of sets; "My class only" on shows rogue and all-class sets; untick shows all; pieces show tooltips with set bonuses
+- [x] Raid boss with no loot data shows "?" and "No loot for this boss in the data yet."
+- [x] Minimap button: shows on the minimap edge, click opens and closes the window, drag moves it round the edge, position kept after /reload
+- [x] `/sloot minimap` hides the button; again shows it
+- [x] Look: three framed panels with gold title strips; Dungeons and Raids headings in the instance list; selected tab highlighted (screenshot 2026-11-06)

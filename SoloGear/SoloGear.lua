@@ -203,6 +203,7 @@ local function Compare(link)
     end
     return score - worst
 end
+SoloGear_Compare = Compare   -- for SoloLoot's upgrade marks
 
 -- Bag overlay ------------------------------------------------------------
 

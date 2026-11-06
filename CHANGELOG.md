@@ -4,6 +4,20 @@ Own WoW addons and data tools. Newest first.
 
 ## 2026-11-06
 
+### SoloLoot (new)
+- Tested in game, all checks pass (minimap button, item sets, Shift-click link, Ctrl-click preview too): window, panels, Ragefire Chasm > Taragaman with three rare drops, icons, item lines and SoloGear's + all work.
+- New look: dark dialog frame, three framed panels with gold title strips (Instances, Bosses, Loot), Dungeons and Raids headings, striped rows, item icons with a quality-coloured edge, highlighted tab buttons. Minimap button (click to open, drag round the edge, `/sloot minimap` to hide).
+- AtlasLoot-style window (`/sloot`, `/loot`): dungeons and raids > bosses > their own drops, and an Item sets tab with a "My class only" filter. Tooltips, Shift-click link, Ctrl-click preview, green + from SoloGear (`SoloGear_Compare` now global). Linked with `link.ps1`. Not yet tested in game.
+- `tools\lootdata.py` writes `SoloLoot\Data.lua`: 26 instances (Map + AreaTable, build 1.60.1.70790), 232 bosses, 1,075 drops, 150 item sets. A boss is an NPC in the instance with loot of its own (gear dropped by at most 6 creatures, 20 in raids, and at least 2 items only it drops) or a rank 3 boss. NPCs with no zone in QuestieDB take the zone of their ID neighbours when all agree; four fixed by hand (Ragnaros, Mutanus, Avatar of Hakkar, Bazzalan).
+- Found: the game files leave out many old dungeon drops (their item data stays on Blizzard's servers), so drops come from QuestieDB, which also lacks much raid loot (Magmadar, Nefarian, Chromaggus show "loot unknown"). ForeverDB's `/dungeons/{id}` can fill this once API access is approved; its data must then be credited in the window.
+
+### SoloCoach
+- Gold misread in the Thunder Bluff notes: the first `money` in the snapshot file is gold at login (5s 52c), not current gold (30s 37c). Notes fixed; `CLAUDE.md` now says which field to read. The addon itself was right.
+
+### QuestieDB
+- New `tools\questie.py`: reads QuestieDB's WoW Forever data (GPL-3.0, github.com/Questie/QuestieDB) into Python. `fetch` downloads the quest, NPC, object and item files to `data\questie\` (not in git); `givers <zoneID> [min] [max]` lists quests started by NPCs in a zone, filtered to Troll Rogue. Base data is build 1.60.1.69893 (26 Oct), corrections daily.
+- SoloCoach notes: Thunder Bluff quests worth taking at level 13 (Ragefire Chasm pair from Rahauro, Journeyman leatherworking), later (Serpentbloom at 14, Leaders of the Fang chain) and skip. Checked against the Blizzard API (Forever) for rewards; two new Forever quests (Traditions of the Bluff, Never Coming Back) are in the API but not in QuestieDB.
+
 ### GitHub
 - Project now a git repository, pushed to https://github.com/Protowind/solo-addons (public; needed for the ForeverDB API access form). `.gitignore` keeps out API keys (`tools/*.json`), local data (`data/`), `CLAUDE.md` and `_retired/`. README starts with a data sources and credits section (ForeverDB.net, wago.tools, Blizzard).
 - Personal details taken out of the tracked files (real name, email, location, local paths, character and realm names); addon authors now Protowind; commits use the GitHub no-reply email. History rewritten to one clean commit.
