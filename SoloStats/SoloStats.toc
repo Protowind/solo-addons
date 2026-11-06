@@ -1,0 +1,10 @@
+## Interface: 16001, 120105
+## Title: SoloStats
+## Notes: FPS, latency and levelling readout (XP/h, time to level, kills to level, rested XP). /ss for options.
+## Author: Protowind
+## Version: 2.0
+## SavedVariables: SoloStatsDB
+## SavedVariablesPerCharacter: SoloStatsSession
+Themes.lua
+SoloStats.lua
+Options.lua

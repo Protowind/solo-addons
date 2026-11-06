@@ -1,0 +1,9 @@
+## Interface: 16001, 120105
+## Title: SoloCoach
+## Notes: Saves a snapshot of your character for Claude (on /reload or logout) and shows Claude's notes in game. /coach
+## Author: Protowind
+## Version: 1.1
+## SavedVariables: SoloCoachDB
+## SavedVariablesPerCharacter: SoloCoachChar
+Advice.lua
+SoloCoach.lua

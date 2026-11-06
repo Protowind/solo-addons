@@ -1,0 +1,9 @@
+# Secrets: API keys never go to GitHub
+tools/*.json
+# Local data (32 MB, rebuilt by the tools)
+data/
+# Local working notes for Claude (paths, network shares)
+CLAUDE.md
+_retired/
+__pycache__/
+*.pyc

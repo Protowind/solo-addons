@@ -1,0 +1,7 @@
+## Interface: 16001, 120105
+## Title: SoloQuest
+## Notes: Quick quest accept and turn-in. Skips reward choices. Hold Shift to pause.
+## Author: Protowind
+## Version: 1.0
+## SavedVariables: SoloQuestDB
+SoloQuest.lua

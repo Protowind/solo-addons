@@ -1,0 +1,7 @@
+## Interface: 16001, 120105
+## Title: SoloSwing
+## Notes: Melee swing timer. Main and off hand bars, Heroic Strike/Cleave queue colour, Slam window. Shift-drag to move.
+## Author: Protowind
+## Version: 1.0
+## SavedVariables: SoloSwingDB
+SoloSwing.lua

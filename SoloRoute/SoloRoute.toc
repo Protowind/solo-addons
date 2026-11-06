@@ -1,0 +1,9 @@
+## Interface: 16001, 120105
+## Title: SoloRoute
+## Notes: Levelling route step by step with a map pin for each step. Auto-advances from your quest log. /route
+## Author: Protowind
+## Version: 1.0
+## SavedVariables: SoloRouteDB
+## SavedVariablesPerCharacter: SoloRouteChar
+Routes.lua
+SoloRoute.lua

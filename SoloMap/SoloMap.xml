@@ -1,0 +1,16 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- One map icon. SoloMapPinMixin is filled in SoloMap.lua -->
+    <Frame name="SoloMapPinTemplate" mixin="SoloMapPinMixin" enableMouse="true" virtual="true">
+        <Size x="16" y="16"/>
+        <Layers>
+            <Layer level="OVERLAY">
+                <Texture parentKey="Icon" setAllPoints="true"/>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnEnter method="OnMouseEnter"/>
+            <OnLeave method="OnMouseLeave"/>
+        </Scripts>
+    </Frame>
+</Ui>

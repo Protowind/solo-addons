@@ -1,0 +1,7 @@
+## Interface: 16001, 120105
+## Title: SoloCombo
+## Notes: Rogue strip: combo points, energy, and Slice and Dice / Rupture / Garrote / Expose Armor timers. Sits under SoloSwing. /sc
+## Author: Protowind
+## Version: 1.0
+## SavedVariables: SoloComboDB
+SoloCombo.lua

@@ -1,0 +1,10 @@
+## Interface: 16001, 120105
+## Title: SoloMap
+## Notes: World map extras: player and cursor coordinates, every flight master (known or not), NPC services you have visited, unexplored areas shown. /smap
+## Author: Protowind
+## Version: 1.1
+## SavedVariables: SoloMapDB
+## SavedVariablesPerCharacter: SoloMapChar
+Data.lua
+SoloMap.lua
+SoloMap.xml

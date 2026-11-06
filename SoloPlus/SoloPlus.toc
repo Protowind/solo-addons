@@ -1,0 +1,8 @@
+## Interface: 16001, 120105
+## Title: SoloPlus
+## Notes: Small helpers: sell greys and repair at vendors with a summary, leatherworking plan (/sp lw), rested warning on logout. /sp
+## Author: Protowind
+## Version: 1.0
+## SavedVariables: SoloPlusDB
+Leatherworking.lua
+SoloPlus.lua
