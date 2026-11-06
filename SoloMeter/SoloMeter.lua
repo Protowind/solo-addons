@@ -406,12 +406,27 @@ local function DrawSpells(session)
                 b.icon:Hide()
                 b.left:SetPoint("LEFT", 4, 0)
             end
+            -- combatSpellDetails names the unit behind the spell: in damage taken, who hit you with it
+            -- (unitName, classification "elite", isMob, isPet); blank for your own damage. Seen live 2026-11-06.
+            local det = s.combatSpellDetails
+            local who = type(det) == "table" and not Secret(det) and det.unitName
+            if Secret(who) or who == "" then who = nil end
+            local tag = ""
+            if who then
+                local cls = det.classification
+                if not Secret(cls) and cls == "elite" then who = who .. " (elite)" end
+                tag = " |cffaaaaaa" .. who .. "|r"
+            end
             FillBar(b, s.totalAmount or 0, spells[1].totalAmount or max, 0.35, 0.55, 0.85)
-            b.left:SetText(string.format("%d. %s", i, name))
+            b.left:SetText(string.format("%d. %s%s", i, name, tag))
             b.left:SetTextColor(1, 1, 1)
             b.right:SetText(RowText(s, session, secret, groupTotal))
             b.guid, b.name, b.inList = nil, nil, nil
-            b.tip = (not secret and s.isAvoidable) and "Avoidable" or nil
+            local tips = {}
+            if who then tips[#tips + 1] = "From " .. who end
+            if not secret and s.isAvoidable and not Secret(s.isAvoidable) then tips[#tips + 1] = "Avoidable" end
+            if not secret and s.isDeadly and not Secret(s.isDeadly) then tips[#tips + 1] = "Deadly" end
+            b.tip = tips[1] and table.concat(tips, "\n") or nil
         else
             b:Hide()
         end
@@ -542,7 +557,11 @@ local function OpenMenu()
         Add("|cff999999---- past fights ----|r", function() end)
         for _, f in ipairs(fights) do
             local on = pastFight and pastFight.id == f.id
-            Add(string.format("%s%s %s", on and "|cffffd200> |r" or "   ", f.name, Clock(f.duration)),
+            -- The game names boss sessions "(!) Bazzalan": shown in red without the mark.
+            local label = f.name
+            local boss = label:match("^%(!%)%s*(.+)$")
+            if boss then label = "|cffff5050" .. boss .. "|r" end
+            Add(string.format("%s%s %s", on and "|cffffd200> |r" or "   ", label, Clock(f.duration)),
                 function() pastFight = f view.spells = false dirty = true end)
         end
     elseif UnitAffectingCombat("player") then

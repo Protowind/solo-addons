@@ -202,6 +202,7 @@ Already tested: 1H swing timing (within 0.15 s).
 - [ ] `/sui`: SoloMeter row shows loaded, its `/meter` button toggles the window
 - [ ] Out of combat, click the header: under Overall a "past fights" list with the last six mobs and fight lengths. Pick one: header shows "Damage · <mob> 0:33" and that fight's bars; right-click the header goes back to current
 - [ ] In combat, click your bar: one line "spells readable after the fight" instead of rows of "?"
+- [ ] After a dungeon pull, Damage taken mode, click your bar: each spell row names the mob in grey, e.g. "Curse of Agony  Searing Blade Cultist (elite)"; hover shows "From ...". Past fights: the boss line is red without the "(!)"
 
 ## SoloErrors (new 2026-11-06)
 
