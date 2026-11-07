@@ -350,7 +350,9 @@ local function HideBlizzard()
     Rescue(PetFrame, "player", -8)
     Kill(PlayerFrame)
     Kill(TargetFrame)
-    Kill(TargetFrameToT)
+    -- Target of target stays a child of TargetFrame (hidden with it). Moving it under the
+    -- hidden frame broke its OnShow/OnHide: they call parent:ConfigureAuraContainer().
+    if TargetFrameToT then pcall(TargetFrameToT.UnregisterAllEvents, TargetFrameToT) end
     Kill(PartyFrame)
     for i = 1, 4 do Kill(_G["PartyMemberFrame" .. i]) end
 end

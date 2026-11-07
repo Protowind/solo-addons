@@ -5,6 +5,7 @@ Own WoW addons and data tools. Newest first.
 ## 2026-11-07
 
 ### Lua error fixes (from the SoloErrors log)
+- **SoloUI 1.3**: "TargetFrame.lua:838: attempt to call a nil value" (twice, 10:01 and 10:07). SoloUI moved the target-of-target frame under its hidden frame; Blizzard's OnShow/OnHide for it call `parent:ConfigureAuraContainer()`, which the hidden frame lacks. It now stays inside the hidden TargetFrame, events off.
 - **SoloMap 1.2**: "Blizzard_MapCanvas.lua:309: assertion failed!" (7 times, on gossip with a new NPC). The pin template set OnEnter/OnLeave in XML; the map canvas asserts new pins have none and sets them itself. Removed from `SoloMap.xml`; tooltips come from the canvas calling OnMouseEnter/OnMouseLeave. The error also stopped the rest of that refresh's icons.
 - **SoloGear 1.2**: `GetCoinTextureString` is nil on this client, so a reward choice with no upgrade errored and never showed "Best gold". Now `C_CurrencyInfo.GetCoinTextureString`, then the old global or `GetMoneyString`, then plain g/s/c text.
 - Not yet tested in game.
